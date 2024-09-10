@@ -1,36 +1,42 @@
+using SecondExample.AddedScripts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
-public class EnemySpawner : MonoBehaviour
+public class EnemySpawner
 {
-    [SerializeField] private float _spawnCooldown;
-
-    [SerializeField] private List<Transform> _spawnPoints;
-
+    private float _spawnCooldown;
+    private List<Transform> _spawnPoints;
     private EnemyFactory _enemyFactory;
-
     private Coroutine _spawn;
+    private CoroutineWorker _coroutineWorker;
 
     [Inject]
-    private void Construct(EnemyFactory enemyFactory)
+    private void Construct(EnemyFactory enemyFactory, CoroutineWorker coroutineWorker)
     {
         _enemyFactory = enemyFactory;
+        _coroutineWorker = coroutineWorker;
+    }
+
+    public EnemySpawner(float spawnCooldown, IEnumerable<Transform> spawnPoints)
+    {
+        _spawnCooldown = spawnCooldown;
+        _spawnPoints = new List<Transform>(spawnPoints);
     }
 
     public void StartWork()
     {
         StopWork();
 
-        _spawn = StartCoroutine(Spawn());
+        _spawn = _coroutineWorker.StartCoroutine(Spawn());
     }
 
     public void StopWork()
     {
         if (_spawn != null)
-            StopCoroutine(_spawn);
+            _coroutineWorker.StopCoroutine(_spawn);
     }
 
     private IEnumerator Spawn()
